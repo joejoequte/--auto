@@ -45,13 +45,12 @@ jobs:
     - name: 安装 Subfinder
       run: |
         # 安装 Subfinder
-        GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
+        GO111MODULE=on go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
     - name: 下载 Hawkeye.py
       run: |
         # 从 GitHub 仓库下载 Hawkeye.py
         curl -L https://github.com/wgpsec/Hawkeye/raw/main/Hawkeye.py -o Hawkeye.py
-        pip install -r requirements.txt
         
     - name: 运行子域名扫描和 Hawkeye
       run: |
