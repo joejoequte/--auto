@@ -1,0 +1,56 @@
+name: 运行子域名扫描和 Hawkeye
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: '要扫描的域名'     
+        required: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v2
+
+    - name: 设置 Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: 安装依赖
+      run: |
+        # 升级 pip
+        python -m pip install --upgrade pip
+        # 安装依赖
+        pip install -r requirements.txt
+
+    - name: 安装 Playwright 和浏览器
+      run: |
+        # 安装 Playwright
+        pip install playwright
+        # 下载并安装 Chromium
+        playwright install --force chromium
+        # 下载并安装 Chrome
+        playwright install --force chrome
+
+    - name: 安装 Subfinder
+      run: |
+        # 安装 Subfinder
+        GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
+
+    - name: 运行子域名扫描和 Hawkeye
+      run: |
+        # 获取要扫描的域名
+        domain=${{ github.event.inputs.domain }}
+        echo "正在扫描 $domain..."
+        # 使用 Subfinder 进行子域名扫描
+        for subdomain in $(subfinder -d $domain -silent); do
+          echo "找到子域名: $subdomain"
+          echo "正在对 $subdomain 运行 Hawkeye..."
+          # 运行 Hawkeye
+          python3 Hawkeye.py -check --deep 5 --work 5 --ua baidu
+        done
